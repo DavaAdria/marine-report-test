@@ -39,7 +39,7 @@
   }).addTo(map);
 
   // Load GeoJSON from data folder
-  fetch('data/tide.geojson')
+  fetch('data/points.geojson')
     .then(response => response.json())
     .then(data => {
       var geojsonLayer = L.geoJSON(data, {
@@ -57,7 +57,7 @@
           layer.bindPopup(popupContent);
         }
       }).addTo(map);
-fetch('data/points.geojson')
+fetch('data/tide.geojson')
     .then(response => response.json())
     .then(data => {
       var geojsonLayer = L.geoJSON(data, {
