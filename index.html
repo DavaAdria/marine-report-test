@@ -56,7 +56,7 @@
           `;
           layer.bindPopup(popupContent);
         }
-      }).addTo(map),
+      }).addTo(map);
 fetch('data/points.geojson')
     .then(response => response.json())
     .then(data => {
