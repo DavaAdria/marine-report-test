@@ -38,45 +38,64 @@
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // Load GeoJSON from data folder
-  fetch('data/points.geojson')
-    .then(response => response.json())
-    .then(data => {
-      var geojsonLayer = L.geoJSON(data, {
-        onEachFeature: function (feature, layer) {
-          let props = feature.properties;
-          let popupContent = `
-          <b>Data description:</b> ${props.description}<br>
-          <b>Research Title:</b> ${props.title}<br>
-          <b>DOI:</b> <a href="${props.DOI}">${props.DOI}</a><br>
-          <b>Date taken:</b> ${props["research date"] || ""}<br>
-          <b>Data owner:</b> ${props.owner}<br>
-          <b>Data availability:</b> ${props["data availability"] || ""}<br>
-          <b>Owner email:</b> <a href="mailto:${props.email}">${props.email}</a>
-          `;
-          layer.bindPopup(popupContent);
-        }
-      }).addTo(map);
-    });
-  fetch('data/tide.geojson')
-    .then(response => response.json())
-    .then(data => {
-      var geojsonLayer = L.geoJSON(data, {
-        onEachFeature: function (feature, layer) {
-          let props = feature.properties;
-          let popupContent = `
-          <b>Data description:</b> ${props.description}<br>
-          <b>Data owner:</b> ${props.owner}<br>
-          <b>Data availability:</b> ${props["data availability"] || ""}<br>
-          <b>Owner email:</b> <a href="mailto:${props.email}">${props.email}</a>
-          `;
-          layer.bindPopup(popupContent);
-        }
-      }).addTo(map);
+  // --- SOLUSI: Gunakan Promise.all untuk memuat semua data SEBELUM zoom ---
 
-      // Auto zoom to all points
-      map.fitBounds(geojsonLayer.getBounds());
-    });
+  // 1. Definisikan promise untuk setiap file
+  const fetchPoints = fetch('data/points.geojson');
+  const fetchTide = fetch('data/tide.geojson');
+
+  // 2. Tunggu kedua file selesai di-fetch dan di-parse sebagai JSON
+  Promise.all([
+    fetchPoints.then(response => response.json()),
+    fetchTide.then(response => response.json())
+  ])
+  .then(data => {
+    // data[0] akan berisi points.geojson
+    // data[1] akan berisi tide.geojson
+
+    // Grup untuk menampung semua layer
+    var allLayers = L.featureGroup();
+
+    // --- Proses points.geojson (data[0]) ---
+    var pointsLayer = L.geoJSON(data[0], {
+      onEachFeature: function (feature, layer) {
+        let props = feature.properties;
+        let popupContent = `
+        <b>Data description:</b> ${props.description}<br>
+        <b>Research Title:</b> ${props.title}<br>
+        <b>DOI:</b> <a href="${props.DOI}">${props.DOI}</a><br>
+        <b>Date taken:</b> ${props["research date"] || ""}<br>
+        <b>Data owner:</b> ${props.owner}<br>
+        <b>Data availability:</b> ${props["data availability"] || ""}<br>
+        <b>Owner email:</b> <a href="mailto:${props.email}">${props.email}</a>
+        `;
+        layer.bindPopup(popupContent);
+      }
+    }).addTo(map);
+    allLayers.addLayer(pointsLayer); // Tambahkan ke grup
+
+    // --- Proses tide.geojson (data[1]) ---
+    var tideLayer = L.geoJSON(data[1], {
+      onEachFeature: function (feature, layer) {
+        let props = feature.properties;
+        let popupContent = `
+        <b>Data description:</b> ${props.description}<br>
+        <b>Data owner:</b> ${props.owner}<br>
+        <b>Data availability:</b> ${props["data availability"] || ""}<br>
+        <b>Owner email:</b> <a href="mailto:${props.email}">${props.email}</a>
+        `;
+        layer.bindPopup(popupContent);
+      }
+    }).addTo(map);
+    allLayers.addLayer(tideLayer); // Tambahkan ke grup
+
+    // 3. Zoom peta agar pas dengan SEMUA layer
+    // INI ADALAH BAGIAN KUNCI YANG DIPERBAIKI
+    map.fitBounds(allLayers.getBounds());
+  })
+  .catch(error => {
+    console.error('Gagal memuat salah satu file GeoJSON:', error);
+  });
 </script>
 
 </body>
