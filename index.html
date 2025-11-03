@@ -58,25 +58,6 @@
         }
       }).addTo(map);
     });
-  fetch('data/tide.geojson')
-    .then(response => response.json())
-    .then(data => {
-      var geojsonLayer = L.geoJSON(data, {
-        onEachFeature: function (feature, layer) {
-          let props = feature.properties;
-          let popupContent = `
-          <b>Data description:</b> ${props.description}<br>
-          <b>Data owner:</b> ${props.owner}<br>
-          <b>Data availability:</b> ${props["data availability"] || ""}<br>
-          <b>Owner email:</b> <a href="mailto:${props.email}">${props.email}</a>
-          `;
-          layer.bindPopup(popupContent);
-        }
-      }).addTo(map);
-
-      // Auto zoom to all points
-      map.fitBounds(geojsonLayer.getBounds());
-    });
 </script>
 
 </body>
