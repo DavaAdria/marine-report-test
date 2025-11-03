@@ -57,9 +57,6 @@
           layer.bindPopup(popupContent);
         }
       }).addTo(map);
-
-      // Auto zoom to all points
-      map.fitBounds(geojsonLayer.getBounds());
     });
   fetch('data/tide.geojson')
     .then(response => response.json())
