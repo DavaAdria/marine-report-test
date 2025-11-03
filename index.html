@@ -61,7 +61,7 @@
       // Auto zoom to all points
       map.fitBounds(geojsonLayer.getBounds());
     });
-  fetch('data/points.geojson')
+  fetch('data/tide.geojson')
     .then(response => response.json())
     .then(data => {
       var geojsonLayer = L.geoJSON(data, {
